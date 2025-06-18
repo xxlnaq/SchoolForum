@@ -29,7 +29,7 @@ spring:
     password: admin
     virtual-host: /
   datasource:
-    url: jdbc:mysql://localhost:3306/school
+    url: jdbc:mysql://localhost:3306/school_forum
     username: root
     password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -54,3 +54,10 @@ spring:
       origin: '*'
       credentials: false
       methods: '*'
+  minio:
+    endpoint: 'http://localhost:9000'
+    username: 'minioadmin'
+    password: 'minioadmin'
+  weather:
+    key: d7ccfa6e0203404d981d7035ba42a7ed
+    host: kt7fby7m53.re.qweatherapi.com

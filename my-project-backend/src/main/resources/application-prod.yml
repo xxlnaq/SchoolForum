@@ -36,7 +36,7 @@ spring:
     password: admin
     virtual-host: /
   datasource:
-    url: jdbc:mysql://localhost:3306/school
+    url: jdbc:mysql://localhost:3306/school_forum
     username: root
     password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -55,9 +55,15 @@ spring:
       mail-limit: 60
     flow:
       period: 3
-      limit: 10
+      limit: 100
       block: 30
     cors:
       origin: '*'
       credentials: false
       methods: '*'
+  minio:
+    endpoint: 'http://localhost:9000'
+    username: 'minioadmin'
+    password: 'minioadmin'
+  weather:
+    key:  d7ccfa6e0203404d981d7035ba42a7ed

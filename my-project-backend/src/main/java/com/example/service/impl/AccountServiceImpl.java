@@ -3,9 +3,7 @@ package com.example.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.entity.dto.Account;
-import com.example.entity.vo.request.ConfirmResetVO;
-import com.example.entity.vo.request.EmailRegisterVO;
-import com.example.entity.vo.request.EmailResetVO;
+import com.example.entity.vo.request.*;
 import com.example.mapper.AccountMapper;
 import com.example.service.AccountService;
 import com.example.utils.Const;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -102,7 +101,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         if(this.existsAccountByUsername(username)) return "该用户名已被他人使用，请重新更换";
         String password = passwordEncoder.encode(info.getPassword());
         Account account = new Account(null, info.getUsername(),
-                password, email, Const.ROLE_DEFAULT, new Date());
+                password, email, Const.ROLE_DEFAULT, null,new Date());
         if(!this.save(account)) {
             return "内部错误，注册失败";
         } else {
@@ -143,6 +142,40 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         return null;
     }
 
+    @Override
+    public String modifyEmail(int id, ModifyEmailVO vo) {
+        String email = vo.getEmail();
+        String code=this.getEmailVerifyCode(email);
+        if(code == null) return "请先获取验证码";
+        if (!code.equals(vo.getCode())) return "验证码错误,请输入";
+        this.deleteEmailVerifyCode(email);
+        Account account = this.findAccountByNameOrEmail(email);
+        if (account != null&&account.getId() != id) return "该电子邮件已经被其他账号绑定";
+//         this.update(Wrappers.<Account>update().set("email", email).eq("id", id));
+// 这里的 update 方法返回的是一个 int 类型的值，表示更新操作影响的行数。
+         this.update()//这是 MyBatis-Plus 提供的一个链式调用的起点，返回一个 Update 对象。
+       // 这个 Update 对象可以继续调用其他方法来构建更新条件。
+                 .eq("id", id)
+                 .set("email", email)
+                 .update();//最终执行更新操作。
+        //这个 update() 方法是链式调用的终点，它会将前面构建的条件和更新内容传递给 MyBatis-Plus 的底层实现，执行 SQL 更新操作。
+        //返回值是一个 int 类型，表示更新操作影响的行数
+       return null;
+    }
+
+    @Override
+    public String changePassword(int id, ChangePasswordVo vo) {
+//      String password = this.query().eq(Account::getId, id).one()).getPassword();
+        String password = this.query().eq("id",id).one().getPassword();
+        if (!passwordEncoder.matches(vo.getPassword(), password)) {
+            System.out.println("888");
+            return "密码错误,请重新输入";
+        }
+       Boolean success= this.update().eq("id", id).set("password", passwordEncoder.encode(vo.getNew_password())).update();
+
+        return success ? null : "密码更新错误，请联系管理员";
+    }
+
     /**
      * 移除Redis中存储的邮件验证码
      * @param email 电邮
@@ -178,10 +211,17 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
      * @return 账户实体
      */
     public Account findAccountByNameOrEmail(String text){
-        return this.query()
-                .eq("username", text).or()
-                .eq("email", text)
-                .one();
+         return
+                 this.query()
+                    .eq("username", text).or()
+                    .eq("email", text)
+                    .one();
+
+    }
+
+    @Override
+    public Account findAccountById(int id) {
+        return this.query().eq("id", id).one();
     }
 
     /**
