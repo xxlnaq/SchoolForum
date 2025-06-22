@@ -36,7 +36,6 @@ function takeAccessToken() {
     }
     return authObj.token
 }
-
 function storeAccessToken(remember, token, expire){
     const authObj = {
         token: token,
@@ -78,7 +77,6 @@ function internalGet(url, headers, success, failure, error = defaultError){
     axios.get(url, { headers: headers }).then(({data}) => {
         if(data.code === 200) {
             success(data.data)
-
         }
         else if(data.code === 401) {
             failure('登录状态已过期，请重新登录！')

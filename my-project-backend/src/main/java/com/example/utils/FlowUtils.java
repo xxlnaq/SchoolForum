@@ -18,7 +18,6 @@ public class FlowUtils {
 
     @Resource
     StringRedisTemplate template;
-
     private static final LimitAction defaultAction = overclock -> !overclock;
 
     /**
