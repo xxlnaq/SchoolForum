@@ -4,7 +4,7 @@ import {useRoute} from "vue-router";
 import {get,post} from "@/net";
 import axios from "axios";
 import {computed, reactive, ref} from "vue";
-import {ArrowLeft, CircleCheck, EditPen, Female, Male, Plus, Star} from "@element-plus/icons-vue";
+import {ArrowLeft, ChatSquare, CircleCheck, Delete, EditPen, Female, Male, Plus, Star} from "@element-plus/icons-vue";
 import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html';
 import Card from "@/components/Card.vue";
 import router from "@/router";
@@ -32,7 +32,7 @@ const edit=ref(false)
 const comment=reactive({
   show:false,
   text:'',
-  quote:-1
+  quote:null
 })
 
 const init=()=> get(`api/forum/topic?tid=${tid}`,data=>{
@@ -84,6 +84,12 @@ function  onCommentAdd(){
   comment.show=false
   loadComments(Math.floor(++topic.data.comments / 10)+1)
 }
+function deleteComment(id){
+  get(`api/forum/delete-comment?id=${id}`,()=>{
+    ElMessage.success("评论删除成功")
+    loadComments(topic.page)
+  })
+}
 
 </script>
 
@@ -100,7 +106,7 @@ function  onCommentAdd(){
     </div>
     <div class="topic-main">
       <div class="topic-main-left">
-          <el-avatar :src="axios.defaults.baseURL + '/images' + topic.data.user.avatar" :size="60"/>
+          <el-avatar :src="store.avatarUserUrl(topic.data.user.avatar)" :size="60"/>
         <div>
           <div style="font-weight: bold;font-size: 18px">
             {{topic.data.user.username}}
@@ -151,7 +157,7 @@ function  onCommentAdd(){
       <div v-if="topic.comments">
             <div class="topic-main" style="margin-top: 10px" v-for="item in topic.comments">
               <div class="topic-main-left">
-                <el-avatar :src="axios.defaults.baseURL + '/images' + item.user.avatar" :size="60"/>
+                <el-avatar :src="store.avatarUserUrl(item.user.avatar)" :size="60"/>
                 <div>
                   <div style="font-weight: bold;font-size: 18px">
                     {{item.user.username}}
@@ -175,7 +181,16 @@ function  onCommentAdd(){
                 <div style="font-size: 13px;color: grey">
                   <div>评论时间:{{new Date(item.time).toLocaleString()}}</div>
                 </div>
+                <div v-if="item.quote" class="comment-quote">
+                  回复：{{item.quote}}
+                </div>
                 <div class="topic-content" v-html="convertToHtml(item.content)"></div>
+                <div style="text-align: right">
+                  <el-link :icon="ChatSquare" @click="comment.show = true;comment.quote = item"
+                           type="info">&nbsp;回复评论</el-link>
+                  <el-link :icon="Delete" type="danger" v-if="item.user.id === store.user.id"
+                           style="margin-left: 20px" @click="deleteComment(item.id)">&nbsp;删除评论</el-link>
+                </div>
 
               </div>
             </div>
@@ -193,13 +208,22 @@ function  onCommentAdd(){
    :default-title="topic.data.title" :default-type="topic.data.type" submit-button="更新文本内容"/>
   <topic-comment-editor :show="comment.show" @close="comment.show=false" @comment="onCommentAdd"
           :tid="tid" :quote="comment.quote"/>
-  <div class="add-comment" @click="comment.show=true" >
+  <div class="add-comment" @click="comment.show=true ; comment.quote=null" >
     <el-icon><Plus/></el-icon>
   </div>
   </div>
 </template>
 
 <style scoped>
+
+.comment-quote {
+  font-size: 13px;
+  color: grey;
+  background-color: rgba(94, 94, 94, 0.1);
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+}
 
 .add-comment{
   position: fixed;
