@@ -166,7 +166,6 @@ const editorOption = {
 </script>
 
 <template>
-  <div>
     <el-drawer :model-value="show" direction="btt"
                :size="650"
                @open="initEditor"
@@ -215,8 +214,6 @@ const editorOption = {
 
       </div>
     </el-drawer>
-  </div>
-
 </template>
 
 <style lang="less" scoped>

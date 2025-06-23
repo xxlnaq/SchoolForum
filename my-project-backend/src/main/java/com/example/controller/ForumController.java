@@ -103,4 +103,5 @@ public class ForumController {
         topicService.deleteComment(id, uid);
         return RestBean.success();
     }
+
 }
